@@ -2,10 +2,10 @@
 	<div>
 		<nav class="panel column is-offset-2 is-8">
 			<p class="panel-heading">
-				P H O N E   B O O K 
-				<button class="button is-link is-outlined" @click="openAdd">
-					Add New
-				</button>
+				Danh bạ
+				<!-- <button class="button is-link" > -->
+					<a class="button is-link" @click="openAdd">Thêm mới</a>
+				<!-- </button> -->
 			</p>
 			<div class="panel-block">
 				<p class="control has-icons-left">
@@ -20,10 +20,10 @@
 					{{ item.name }}
 				</span>
 				<span class="has-text-primary panel-icon column is-1">
-					<i class="fa fa-eye" aria-hidden="true"></i>
+					<i class="fa fa-eye" aria-hidden="true" @click="openShow(key)"></i>
 				</span>
 				<span class="has-text-info panel-icon column is-1">
-					<i class="fa fa-edit" aria-hidden="true"></i>
+					<i class="fa fa-edit" aria-hidden="true" @click="openUpdate(key)"></i>
 				</span>
 				<span class="has-text-danger panel-icon column is-1">
 					<i class="fa fa-trash" aria-hidden="true"></i>
@@ -32,7 +32,10 @@
 
 		</nav>
 
+		<!-- components -->
 		<Add :openmodal='addActive' @closeRequest='close'></Add>
+		<Show :openmodal='showActive' @closeRequest='close'></Show>
+		<Update :openmodal='updateActive' @closeRequest='close'></Update>
 
 	</div>
 
@@ -40,15 +43,18 @@
 
 <script>
 let Add = require('./Add.vue');
-	
+let Show = require('./Show.vue');
+let Update = require('./Update.vue');	
 	export default{
 
-		components:{Add},
+		components:{Add,Show,Update},
 
 		data(){
 			return{
 
 				addActive : '',
+				showActive : '',
+				updateActive : '',
 				lists:{},
 				errors:{}
 
@@ -65,9 +71,18 @@ let Add = require('./Add.vue');
 			openAdd(){
 				this.addActive = 'is-active';
 			},
+			openShow(key){
+				this.$children[1].list = this.lists[key]
+				this.showActive = 'is-active';
+			},
+			openUpdate(key){
+				this.$children[2].list = this.lists[key]
+				this.updateActive = 'is-active';
+			},
 			close(){
-				this.addActive = ''
+				this.addActive = this.showActive = this.updateActive = ''
 			}
+			
 		}
 	}
 </script>
