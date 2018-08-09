@@ -3,22 +3,22 @@
 		<div class="modal-background"></div>
 		<div class="modal-card">
 			<header class="modal-card-head">
-				<p class="modal-card-title">Update {{ list.name }}'s Detail</p>
+				<p class="modal-card-title">Cập nhật {{ list.name }}'s Detail</p>
 				<button class="delete" aria-label="close" @click='close'></button>
 			</header>
 
 			<section class="modal-card-body">
 				<div class="field">
-					<label class="label">Name</label>
+					<label class="label">Tên</label>
 					<div class="control">
-						<input class="input" :class="{'is-danger':errors.name}" type="text" placeholder="Name" v-model="list.name">
+						<input class="input" :class="{'is-danger':errors.name}" type="text" placeholder="Tên" v-model="list.name">
 					</div>
 					<small v-if="errors.name" class="has-text-danger">{{ errors.name[0] }}</small>
 				</div>
 				<div class="field">
-					<label class="label">Phone</label>
+					<label class="label">Số điện thoại</label>
 					<div class="control">
-						<input class="input" :class="{'is-danger':errors.phone}" type="numberic" placeholder="Phone" v-model="list.phone">
+						<input class="input" :class="{'is-danger':errors.phone}" type="numberic" placeholder="Số điện thoại" v-model="list.phone">
 					</div>
 					<small v-if="errors.phone" class="has-text-danger">{{ errors.phone[0] }}</small>
 				</div>
@@ -31,8 +31,8 @@
 				</div>
 			</section>
 			<footer class="modal-card-foot">
-				<button class="button is-success" @click = 'update'>Update</button>
-				<button class="button" @click='close'>Cancel</button>
+				<button class="button is-success" @click = 'update'>Cập nhật</button>
+				<button class="button" @click='close'>Huỷ</button>
 			</footer>
 		</div>
 	</div>

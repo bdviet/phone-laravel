@@ -43623,18 +43623,18 @@ var staticRenderFns = [
     return _c("footer", { staticClass: "footer" }, [
       _c("div", { staticClass: "content has-text-centered" }, [
         _c("p", [
-          _c("strong", [_vm._v("Vuejs Phonebook App")]),
-          _vm._v(" by "),
+          _c("strong", [_vm._v("Phần mềm quản lý danh bạ điện thoại")]),
+          _vm._v(" © "),
           _c("a", { attrs: { href: "https://facebook.com/bdviett" } }, [
             _vm._v("Bui Duc Viet")
           ]),
-          _vm._v(". The source code is licensed\n\t\t\t"),
+          _vm._v(". Bản quyền\n\t\t\t"),
           _c(
             "a",
             { attrs: { href: "https://github.com/bdviet/phone-laravel" } },
             [_vm._v("Phonebook")]
           ),
-          _vm._v(" "),
+          _vm._v(" © 2018\n\t\t\t"),
           _c(
             "a",
             {
@@ -43753,6 +43753,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
 
 var Add = __webpack_require__(45);
 var Show = __webpack_require__(48);
@@ -43768,17 +43771,40 @@ var Update = __webpack_require__(51);
 			showActive: '',
 			updateActive: '',
 			lists: {},
-			errors: {}
+			errors: {},
+			loading: false,
+			searchQuery: '',
+			temp: ''
 
 		};
 	},
+
+	watch: {
+		searchQuery: function searchQuery() {
+			var _this = this;
+
+			if (this.searchQuery.length > 0) {
+
+				this.temp = this.lists.filter(function (item) {
+					return Object.keys(item).some(function (key) {
+						var string = String(item[key]);
+						return string.toLowerCase().indexOf(_this.searchQuery.toLowerCase()) > -1;
+					});
+				});
+				// console.log(result)
+			} else {
+				this.temp = this.lists;
+			}
+		}
+	},
+
 	mounted: function mounted() {
-		var _this = this;
+		var _this2 = this;
 
 		axios.post('/getData').then(function (response) {
-			return _this.lists = response.data;
+			return _this2.lists = _this2.temp = response.data;
 		}).catch(function (error) {
-			return _this.errors = error.response.data.errors;
+			return _this2.errors = error.response.data.errors;
 		});
 	},
 
@@ -43788,15 +43814,27 @@ var Update = __webpack_require__(51);
 			this.addActive = 'is-active';
 		},
 		openShow: function openShow(key) {
-			this.$children[1].list = this.lists[key];
+			this.$children[1].list = this.temp[key];
 			this.showActive = 'is-active';
 		},
 		openUpdate: function openUpdate(key) {
-			this.$children[2].list = this.lists[key];
+			this.$children[2].list = this.temp[key];
 			this.updateActive = 'is-active';
 		},
 		close: function close() {
 			this.addActive = this.showActive = this.updateActive = '';
+		},
+		del: function del(key, id) {
+			var _this3 = this;
+
+			if (confirm("Bạn chắc chắn chứ ?")) {
+				this.loading = !this.loading;
+				axios.delete('phonebook/' + id).then(function (response) {
+					_this3.lists.splice(key, 1);_this3.loading = !_this3.loading;
+				}).catch(function (error) {
+					return _this3.errors = error.response.data.errors;
+				});
+			}
 		}
 	}
 });
@@ -43918,7 +43956,18 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 			var _this = this;
 
 			axios.post('/phonebook', this.$data.list).then(function (response) {
-				return _this.close();
+				_this.close();
+				_this.$parent.lists.push(response.data);
+				_this.$parent.lists.sort(function (a, b) {
+					if (a.name > b.name) {
+
+						return 1;
+					} else if (a.name < b.name) {
+
+						return -1;
+					}
+				});
+				_this.list = "";
 			}).catch(function (error) {
 				return _this.errors = error.response.data.errors;
 			});
@@ -43941,7 +43990,7 @@ var render = function() {
     _c("div", { staticClass: "modal-card" }, [
       _c("header", { staticClass: "modal-card-head" }, [
         _c("p", { staticClass: "modal-card-title" }, [
-          _vm._v("Add New Phonebook")
+          _vm._v("Thêm liên lạc mới")
         ]),
         _vm._v(" "),
         _c("button", {
@@ -43953,7 +44002,7 @@ var render = function() {
       _vm._v(" "),
       _c("section", { staticClass: "modal-card-body" }, [
         _c("div", { staticClass: "field" }, [
-          _c("label", { staticClass: "label" }, [_vm._v("Name")]),
+          _c("label", { staticClass: "label" }, [_vm._v("Tên")]),
           _vm._v(" "),
           _c("div", { staticClass: "control" }, [
             _c("input", {
@@ -43967,7 +44016,7 @@ var render = function() {
               ],
               staticClass: "input",
               class: { "is-danger": _vm.errors.name },
-              attrs: { type: "text", placeholder: "Name" },
+              attrs: { type: "text", placeholder: "Tên" },
               domProps: { value: _vm.list.name },
               on: {
                 input: function($event) {
@@ -43988,7 +44037,7 @@ var render = function() {
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "field" }, [
-          _c("label", { staticClass: "label" }, [_vm._v("Phone")]),
+          _c("label", { staticClass: "label" }, [_vm._v("Số điện thoại")]),
           _vm._v(" "),
           _c("div", { staticClass: "control" }, [
             _c("input", {
@@ -44002,7 +44051,7 @@ var render = function() {
               ],
               staticClass: "input",
               class: { "is-danger": _vm.errors.phone },
-              attrs: { type: "numberic", placeholder: "Phone" },
+              attrs: { type: "numberic", placeholder: "Số điện thoại" },
               domProps: { value: _vm.list.phone },
               on: {
                 input: function($event) {
@@ -44062,11 +44111,11 @@ var render = function() {
         _c(
           "button",
           { staticClass: "button is-success", on: { click: _vm.save } },
-          [_vm._v("Save")]
+          [_vm._v("Lưu")]
         ),
         _vm._v(" "),
         _c("button", { staticClass: "button", on: { click: _vm.close } }, [
-          _vm._v("Cancel")
+          _vm._v("Huỷ")
         ])
       ])
     ])
@@ -44399,7 +44448,7 @@ var render = function() {
     _c("div", { staticClass: "modal-card" }, [
       _c("header", { staticClass: "modal-card-head" }, [
         _c("p", { staticClass: "modal-card-title" }, [
-          _vm._v("Update " + _vm._s(_vm.list.name) + "'s Detail")
+          _vm._v("Cập nhật " + _vm._s(_vm.list.name) + "'s Detail")
         ]),
         _vm._v(" "),
         _c("button", {
@@ -44411,7 +44460,7 @@ var render = function() {
       _vm._v(" "),
       _c("section", { staticClass: "modal-card-body" }, [
         _c("div", { staticClass: "field" }, [
-          _c("label", { staticClass: "label" }, [_vm._v("Name")]),
+          _c("label", { staticClass: "label" }, [_vm._v("Tên")]),
           _vm._v(" "),
           _c("div", { staticClass: "control" }, [
             _c("input", {
@@ -44425,7 +44474,7 @@ var render = function() {
               ],
               staticClass: "input",
               class: { "is-danger": _vm.errors.name },
-              attrs: { type: "text", placeholder: "Name" },
+              attrs: { type: "text", placeholder: "Tên" },
               domProps: { value: _vm.list.name },
               on: {
                 input: function($event) {
@@ -44446,7 +44495,7 @@ var render = function() {
         ]),
         _vm._v(" "),
         _c("div", { staticClass: "field" }, [
-          _c("label", { staticClass: "label" }, [_vm._v("Phone")]),
+          _c("label", { staticClass: "label" }, [_vm._v("Số điện thoại")]),
           _vm._v(" "),
           _c("div", { staticClass: "control" }, [
             _c("input", {
@@ -44460,7 +44509,7 @@ var render = function() {
               ],
               staticClass: "input",
               class: { "is-danger": _vm.errors.phone },
-              attrs: { type: "numberic", placeholder: "Phone" },
+              attrs: { type: "numberic", placeholder: "Số điện thoại" },
               domProps: { value: _vm.list.phone },
               on: {
                 input: function($event) {
@@ -44520,11 +44569,11 @@ var render = function() {
         _c(
           "button",
           { staticClass: "button is-success", on: { click: _vm.update } },
-          [_vm._v("Update")]
+          [_vm._v("Cập nhật")]
         ),
         _vm._v(" "),
         _c("button", { staticClass: "button", on: { click: _vm.close } }, [
-          _vm._v("Cancel")
+          _vm._v("Huỷ")
         ])
       ])
     ])
@@ -44562,12 +44611,44 @@ var render = function() {
               "a",
               { staticClass: "button is-link", on: { click: _vm.openAdd } },
               [_vm._v("Thêm mới")]
-            )
+            ),
+            _vm._v(" "),
+            _vm.loading
+              ? _c("span", { staticClass: "is-pulled-right" }, [
+                  _c("i", { staticClass: "fa fa-spinner fa-pulse fa-2x fa-fw" })
+                ])
+              : _vm._e()
           ]),
           _vm._v(" "),
-          _vm._m(0),
+          _c("div", { staticClass: "panel-block" }, [
+            _c("p", { staticClass: "control has-icons-left" }, [
+              _c("input", {
+                directives: [
+                  {
+                    name: "model",
+                    rawName: "v-model",
+                    value: _vm.searchQuery,
+                    expression: "searchQuery"
+                  }
+                ],
+                staticClass: "input is-small",
+                attrs: { type: "text", placeholder: "search" },
+                domProps: { value: _vm.searchQuery },
+                on: {
+                  input: function($event) {
+                    if ($event.target.composing) {
+                      return
+                    }
+                    _vm.searchQuery = $event.target.value
+                  }
+                }
+              }),
+              _vm._v(" "),
+              _vm._m(0)
+            ])
+          ]),
           _vm._v(" "),
-          _vm._l(_vm.lists, function(item, key) {
+          _vm._l(_vm.temp, function(item, key) {
             return _c("a", { staticClass: "panel-block" }, [
               _c("span", { staticClass: "column is-9" }, [
                 _vm._v("\n\t\t\t\t" + _vm._s(item.name) + "\n\t\t\t")
@@ -44605,7 +44686,21 @@ var render = function() {
                 ]
               ),
               _vm._v(" "),
-              _vm._m(1, true)
+              _c(
+                "span",
+                { staticClass: "has-text-danger panel-icon column is-1" },
+                [
+                  _c("i", {
+                    staticClass: "fa fa-trash",
+                    attrs: { "aria-hidden": "true" },
+                    on: {
+                      click: function($event) {
+                        _vm.del(key, item.id)
+                      }
+                    }
+                  })
+                ]
+              )
             ])
           })
         ],
@@ -44635,36 +44730,9 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("div", { staticClass: "panel-block" }, [
-      _c("p", { staticClass: "control has-icons-left" }, [
-        _c("input", {
-          staticClass: "input is-small",
-          attrs: { type: "text", placeholder: "search" }
-        }),
-        _vm._v(" "),
-        _c("span", { staticClass: "icon is-small is-left" }, [
-          _c("i", {
-            staticClass: "fas fa-search",
-            attrs: { "aria-hidden": "true" }
-          })
-        ])
-      ])
+    return _c("span", { staticClass: "icon is-small is-left" }, [
+      _c("i", { staticClass: "fa fa-search", attrs: { "aria-hidden": "true" } })
     ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
-    return _c(
-      "span",
-      { staticClass: "has-text-danger panel-icon column is-1" },
-      [
-        _c("i", {
-          staticClass: "fa fa-trash",
-          attrs: { "aria-hidden": "true" }
-        })
-      ]
-    )
   }
 ]
 render._withStripped = true

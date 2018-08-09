@@ -6,16 +6,19 @@
 				<!-- <button class="button is-link" > -->
 					<a class="button is-link" @click="openAdd">Thêm mới</a>
 				<!-- </button> -->
+				<span class="is-pulled-right" v-if="loading">
+					<i class="fa fa-spinner fa-pulse fa-2x fa-fw"></i>
+				</span>
 			</p>
 			<div class="panel-block">
 				<p class="control has-icons-left">
-					<input class="input is-small" type="text" placeholder="search">
+					<input class="input is-small" type="text" placeholder="search" v-model="searchQuery">
 					<span class="icon is-small is-left">
-						<i class="fas fa-search" aria-hidden="true"></i>
+						<i class="fa fa-search" aria-hidden="true"></i>
 					</span>
 				</p>
 			</div>
-			<a class="panel-block" v-for="item,key in lists">
+			<a class="panel-block" v-for="item,key in temp">
 				<span class="column is-9">
 					{{ item.name }}
 				</span>
@@ -26,7 +29,7 @@
 					<i class="fa fa-edit" aria-hidden="true" @click="openUpdate(key)"></i>
 				</span>
 				<span class="has-text-danger panel-icon column is-1">
-					<i class="fa fa-trash" aria-hidden="true"></i>
+					<i class="fa fa-trash" aria-hidden="true" @click="del(key, item.id)"></i>
 				</span>
 			</a>
 
@@ -44,7 +47,7 @@
 <script>
 let Add = require('./Add.vue');
 let Show = require('./Show.vue');
-let Update = require('./Update.vue');	
+let Update = require('./Update.vue');
 	export default{
 
 		components:{Add,Show,Update},
@@ -56,14 +59,37 @@ let Update = require('./Update.vue');
 				showActive : '',
 				updateActive : '',
 				lists:{},
-				errors:{}
+				errors:{},
+				loading:false,
+				searchQuery:'',
+				temp:''
 
+			}
+		},
+		watch:{
+			searchQuery(){
+				if(this.searchQuery.length > 0){
+
+					this.temp = this.lists.filter((item) =>{
+						return Object.keys(item).some((key) =>{
+							let string = String(item[key])
+							return string.toLowerCase().indexOf(this.searchQuery.
+							toLowerCase()) >-1
+						})
+						
+					});
+					// console.log(result)
+
+				}
+				else{
+					this.temp = this.lists;
+				}
 			}
 		},
 
 		mounted(){
 			axios.post('/getData')
-			.then((response)=> this.lists = response.data)
+			.then((response)=> this.lists = this.temp = response.data)
 			.catch((error) => this.errors = error.response.data.errors)
 		},
 
@@ -72,15 +98,24 @@ let Update = require('./Update.vue');
 				this.addActive = 'is-active';
 			},
 			openShow(key){
-				this.$children[1].list = this.lists[key]
+				this.$children[1].list = this.temp[key]
 				this.showActive = 'is-active';
 			},
 			openUpdate(key){
-				this.$children[2].list = this.lists[key]
+				this.$children[2].list = this.temp[key]
 				this.updateActive = 'is-active';
 			},
 			close(){
 				this.addActive = this.showActive = this.updateActive = ''
+			},
+			del(key,id){
+				if(confirm("Bạn chắc chắn chứ ?")){
+					this.loading = !this.loading;
+					axios.delete(`phonebook/${id}`)
+					.then((response)=> {this.lists.splice(key,1);this.loading = !this.loading})
+					.catch((error) => this.errors = error.response.data.errors)
+				}
+				
 			}
 			
 		}
